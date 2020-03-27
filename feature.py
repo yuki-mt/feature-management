@@ -18,7 +18,7 @@ class Feature(metaclass=ABCMeta):
     dir_name = '.'
     memo: Dict[str, str] = {}
     train_path_fmt = path.join(dir_name, '{}_train.pkl')
-    test_path_fmt = path.join(dir_name, '{}_train.pkl')
+    test_path_fmt = path.join(dir_name, '{}_test.pkl')
 
     def __init__(self):
         self.name = self.__class__.__name__
@@ -32,7 +32,7 @@ class Feature(metaclass=ABCMeta):
             self.create_features()
             Feature.memo[self.name] = self.description
 
-            if path.exists(self.train_path)and path.exists(self.test_path) and not overwrite:
+            if path.exists(self.train_path) and path.exists(self.test_path) and not overwrite:
                 print(self.name, 'was skipped')
             else:
                 self.train.to_pickle(self.train_path)
