@@ -16,8 +16,8 @@ def generate_features(namespace, overwrite: bool = False):
 
 
 def load_datasets(feats: List[str]):
-    dfs = [pd.read_pickle(f'{Feature.dir_name}/{f}_train.pkl') for f in feats]
+    dfs = [pd.read_pickle(Feature.train_path_fmt.format(f)) for f in feats]
     X_train = pd.concat(dfs, axis=1)
-    dfs = [pd.read_pickle(f'{Feature.dir_name}/{f}_test.pkl') for f in feats]
+    dfs = [pd.read_pickle(Feature.test_path_fmt.format(f)) for f in feats]
     X_test = pd.concat(dfs, axis=1)
     return X_train, X_test

@@ -1,7 +1,7 @@
 import pandas as pd
 import time
 from abc import ABCMeta, abstractmethod
-from pathlib import Path
+from os import path
 from contextlib import contextmanager
 from typing import Dict
 
@@ -17,24 +17,26 @@ def timer(name):
 class Feature(metaclass=ABCMeta):
     dir_name = '.'
     memo: Dict[str, str] = {}
+    train_path_fmt = path.join(dir_name, '{}_train.pkl')
+    test_path_fmt = path.join(dir_name, '{}_train.pkl')
 
     def __init__(self):
         self.name = self.__class__.__name__
         self.train = pd.DataFrame()
         self.test = pd.DataFrame()
-        self.train_path = Path(self.dir_name) / f'{self.name}_train.pkl'
-        self.test_path = Path(self.dir_name) / f'{self.name}_test.pkl'
+        self.train_path = Feature.train_path_fmt.format(self.name)
+        self.test_path = Feature.test_path_fmt.format(self.name)
 
     def run(self, overwrite: bool = False):
         with timer(self.name):
             self.create_features()
             Feature.memo[self.name] = self.description
 
-            if self.train_path.exists() and self.test_path.exists() and not overwrite:
+            if path.exists(self.train_path)and path.exists(self.test_path) and not overwrite:
                 print(self.name, 'was skipped')
             else:
-                self.train.to_pickle(str(self.train_path))
-                self.test.to_pickle(str(self.test_path))
+                self.train.to_pickle(self.train_path)
+                self.test.to_pickle(self.test_path)
 
     @abstractmethod
     def create_features(self):
