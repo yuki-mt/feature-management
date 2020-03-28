@@ -2,6 +2,12 @@
 
 From: https://amalog.hateblo.jp/entry/kaggle-feature-management
 
+## install dependencies
+
+```
+pip install -r requirements.txt
+sudo apt-get install graphviz
+```
+
 ## Run
-- change value of `dir_name` in feature.py
-- run example.py
+run `python example.py`

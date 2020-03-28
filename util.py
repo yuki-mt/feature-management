@@ -20,7 +20,7 @@ class FeatureManager:
 
     def get_features(self, feats: List[str],
                      overwrite: bool = False) -> pd.DataFrame:
-        if self.is_graph:
+        if self.is_graph and overwrite:
             from pycallgraph import PyCallGraph, Config
             config = Config(groups=False,
                             output='graphviz',

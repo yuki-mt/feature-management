@@ -33,9 +33,10 @@ if __name__ == '__main__':
     gs = globals()
     os.makedirs(Feature.dir_name, exist_ok=True)
     for postfix in ['train', 'test']:
-        manager = FeatureManager(gs, postfix)
+        manager = FeatureManager(gs, postfix, is_graph=True)
         names = manager.get_all_names()
         names.remove('Base')
+        # output pycallgraph only if `is_graph=True` and `overwrite=True`
         df = manager.get_features(names, overwrite=True)
         print(postfix)
         print(df)
