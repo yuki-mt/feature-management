@@ -5,11 +5,14 @@ from feature import Feature
 
 
 class FeatureManager:
-    def __init__(self, namespace, postfix):
-        self.features = []
+    def __init__(self, namespace, postfix: str, is_graph: bool = True):
         self.postfix = postfix
+        self.is_graph = is_graph
+        self.features = []
         for v in namespace.values():
-            if inspect.isclass(v) and issubclass(v, Feature) and not inspect.isabstract(v):
+            if inspect.isclass(v) \
+                    and issubclass(v, Feature) \
+                    and not inspect.isabstract(v):
                 self.features.append(v())
 
     def get_all_names(self) -> List[str]:
@@ -17,6 +20,20 @@ class FeatureManager:
 
     def get_features(self, feats: List[str],
                      overwrite: bool = False) -> pd.DataFrame:
+        if self.is_graph:
+            from pycallgraph import PyCallGraph, Config
+            config = Config(groups=False,
+                            output='graphviz',
+                            include=["*.run", "*.create_features"],
+                            exclude=[])
+            config.convert_filter_args()
+            with PyCallGraph(config=config):
+                return self.__get_features(feats, overwrite)
+        else:
+            return self.__get_features(feats, overwrite)
+
+    def __get_features(self, feats: List[str],
+                       overwrite: bool = False) -> pd.DataFrame:
         feat_set = set(feats)
         dfs = []
         for f in self.features:

@@ -36,7 +36,7 @@ if __name__ == '__main__':
         manager = FeatureManager(gs, postfix)
         names = manager.get_all_names()
         names.remove('Base')
-        df = manager.get_features(names)
+        df = manager.get_features(names, overwrite=True)
         print(postfix)
         print(df)
         print('====================')
