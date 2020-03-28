@@ -8,7 +8,7 @@ class FeatureManager:
     def __init__(self, namespace, postfix):
         self.features = []
         self.postfix = postfix
-        for k, v in namespace.items():
+        for v in namespace.values():
             if inspect.isclass(v) and issubclass(v, Feature) and not inspect.isabstract(v):
                 self.features.append(v())
 

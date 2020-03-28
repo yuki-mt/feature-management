@@ -26,7 +26,7 @@ class Feature(metaclass=ABCMeta):
         if self.is_saved and os.path.exists(path):
             self.df = pd.read_pickle(path)
 
-    def run(self, postfix: str, overwrite: bool) -> pd.DataFrame:
+    def run(self, postfix: str = '', overwrite: bool = False) -> pd.DataFrame:
         path = self.path_fmt.format(f'_{postfix}' if postfix else '')
         self.__load(path)
         if overwrite or self.df.empty:
