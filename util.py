@@ -5,38 +5,36 @@ from feature import Feature
 
 
 class FeatureManager:
-    def __init__(self, namespace, postfix: str, is_graph: bool = True):
+    def __init__(self, namespace, postfix: str):
         self.postfix = postfix
-        self.is_graph = is_graph
-        self.features = []
-        for v in namespace.values():
+        self.feature_dict = {}
+        for k, v in namespace.items():
             if inspect.isclass(v) \
                     and issubclass(v, Feature) \
                     and not inspect.isabstract(v):
-                self.features.append(v())
+                self.feature_dict[k] = v()
+        self.feature_path = namespace['__file__']
 
     def get_all_names(self) -> List[str]:
-        return [f.name for f in self.features]
+        return list(self.feature_dict.keys())
 
-    def get_features(self, feats: List[str],
-                     overwrite: bool = False) -> pd.DataFrame:
-        if self.is_graph and overwrite:
-            from pycallgraph import PyCallGraph, Config
-            config = Config(groups=False,
-                            output='graphviz',
-                            include=["*.run", "*.create_features"],
-                            exclude=[])
-            config.convert_filter_args()
-            with PyCallGraph(config=config):
-                return self.__get_features(feats, overwrite)
-        else:
-            return self.__get_features(feats, overwrite)
+    def build(self, feats: List[str], overwrite=False):
+        for f in feats:
+            self.feature_dict[f].build(self.feature_dict,
+                                       self.postfix,
+                                       self.feature_path)
 
-    def __get_features(self, feats: List[str],
-                       overwrite: bool = False) -> pd.DataFrame:
-        feat_set = set(feats)
+    def get_features(self, feats: List[str], update: bool = False) -> pd.DataFrame:
         dfs = []
-        for f in self.features:
-            if f.name in feat_set:
-                dfs.append(f.run(self.postfix, overwrite))
+        for f in feats:
+            dfs.append(self.feature_dict[f].get_features(self.postfix, update))
         return pd.concat(dfs, axis=1)
+
+
+def main_command():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("class_name", type=str)
+    parser.add_argument("--postfix", type=str, default='')
+    args = parser.parse_args()
+    return f'{args.class_name}().run_and_save("{args.postfix}")'
