@@ -8,6 +8,7 @@ import subprocess
 import re
 
 
+# run instances of this class through FeatuerManager
 class Feature(metaclass=ABCMeta):
     data_dir = './feat'
     class_dir = os.path.join(data_dir, 'py')
@@ -19,9 +20,10 @@ class Feature(metaclass=ABCMeta):
             cls._instance = super(Feature, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, file_dependencies: List[str] = []):
         self.name = self.__class__.__name__
         self.df = pd.DataFrame()
+        self.file_dependencies = file_dependencies
 
     def __get_dependency(self, source: str) -> List[str]:
         return re.findall(r' +([^ =]+?)\(\)\.get_features\(', source)
@@ -69,7 +71,7 @@ class Feature(metaclass=ABCMeta):
         source = getsource(self.__class__)
         source_path = self.__save_source(source)
         dependencies = self.__get_dependency(source)
-        dep_option_list = ['-d ' + source_path]
+        dep_option_list = ['-d ' + d for d in (self.file_dependencies + [source_path])]
         for d in dependencies:
             all_feats[d].build(all_feats, postfix, filepath)
             dep_option_list.append('-d ' + self.__output_path(postfix, d))

@@ -4,13 +4,17 @@ import pandas as pd
 
 
 class Base(Feature):
+    def __init__(self):
+        super().__init__(
+            file_dependencies=['./dataset/train.csv', './dataset/test.csv'])
+
     def create_features(self, postfix: str):
         if postfix == 'train':
-            self.df = pd.DataFrame([[123, 2, 0], [345, 4, 1], [567, 6, 0]],
-                                   columns=['col_1', 'col_2', 'label'])
+            self.df = pd.read_csv(self.file_dependencies[0],
+                                  names=['col_1', 'col_2', 'label'])
         if postfix == 'test':
-            self.df = pd.DataFrame([[987, 7], [543, 3], [321, 2]],
-                                   columns=['col_1', 'col_2'])
+            self.df = pd.read_csv(self.file_dependencies[1],
+                                  names=['col_1', 'col_2'])
 
 
 class Sample(Feature):
