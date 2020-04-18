@@ -24,6 +24,7 @@ class Feature(metaclass=ABCMeta):
         self.name = self.__class__.__name__
         self.df = pd.DataFrame()
         self.file_dependencies = file_dependencies
+        self.dvc_path = os.path.join(self.dvc_dir, f'{self.name}.pkl.dvc')
 
     def __get_dependency(self, source: str) -> List[str]:
         return re.findall(r' +([^ =]+?)\(\)\.get_features\(', source)
@@ -34,58 +35,51 @@ class Feature(metaclass=ABCMeta):
             f.write(source)
         return path
 
-    def __output_path(self, postfix: str, name: str = '') -> str:
-        postfix = '_' + postfix if postfix else ''
+    def __output_path(self, name: str = '') -> str:
         name = name or self.name
-        return os.path.join(self.data_dir, f'{name}{postfix}.pkl')
+        return os.path.join(self.data_dir, f'{name}.pkl')
 
-    def __dvc_path(self, postfix: str, name: str = '') -> str:
-        postfix = '_' + postfix if postfix else ''
-        name = name or self.name
-        return os.path.join(self.dvc_dir, f'{name}{postfix}.pkl.dvc')
-
-    def __save(self, path: str):
-        with open(path, 'wb') as f:
+    def __save(self):
+        with open(self.__output_path(), 'wb') as f:
             pickle.dump(self.df, f)
 
-    def __load(self, path: str):
+    def __load(self):
+        path = self.__output_path()
         if os.path.exists(path):
             with open(path, 'rb') as f:
                 self.df = pickle.load(f)
 
-    def get_features(self, postfix: str = '', update: bool = False) -> pd.DataFrame:
+    def get_features(self, update: bool = False) -> pd.DataFrame:
         if update:
             source = getsource(self.__class__)
             self.__save_source(source)
-            command = f'dvc repro {self.__dvc_path(postfix)}'
+            command = f'dvc repro {self.dvc_path}'
             subprocess.run(command, shell=True)
-        self.__load(self.__output_path(postfix))
+        self.__load()
         return self.df
 
-    def build(self, all_feats: Dict[str, "Feature"], postfix: str, filepath: str, overwrite: bool = False):
-        my_output_path = self.__output_path(postfix)
-        if not overwrite and os.path.exists(self.__dvc_path(postfix)):
+    def build(self, all_feats: Dict[str, "Feature"], filepath: str, overwrite: bool = False):
+        if not overwrite and os.path.exists(self.dvc_path):
             return
-        output_opt = '-o ' + my_output_path
-        dvc_output_opt = '-f ' + self.__dvc_path(postfix)
+        output_opt = '-o ' + self.__output_path()
+        dvc_output_opt = '-f ' + self.dvc_path
         source = getsource(self.__class__)
         source_path = self.__save_source(source)
         dependencies = self.__get_dependency(source)
         dep_option_list = ['-d ' + d for d in (self.file_dependencies + [source_path])]
         for d in dependencies:
-            all_feats[d].build(all_feats, postfix, filepath)
-            dep_option_list.append('-d ' + self.__output_path(postfix, d))
+            all_feats[d].build(all_feats, filepath)
+            dep_option_list.append('-d ' + self.__output_path(d))
         dep_option = ' '.join(dep_option_list)
-        postfix_opt = f'--postfix {postfix}' if postfix else ''
-        py_command = f'python {filepath} {self.name} {postfix_opt}'
+        py_command = f'python {filepath} {self.name}'
         command = ' '.join(['dvc run', dep_option, output_opt, dvc_output_opt, py_command])
         print(f'run: {command}')
         subprocess.run(command, shell=True)
 
-    def run_and_save(self, postfix: str):
-        self.create_features(postfix)
-        self.__save(self.__output_path(postfix))
+    def run_and_save(self):
+        self.create_features()
+        self.__save()
 
     @abstractmethod
-    def create_features(self, postfix: str):
+    def create_features(self):
         raise NotImplementedError

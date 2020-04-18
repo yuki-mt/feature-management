@@ -29,24 +29,25 @@ class FeatureManager:
     def get_all_names(self) -> List[str]:
         return list(self.feature_dict.keys())
 
-    def build(self, feats: List[str], postfix: str = '', overwrite: bool = True):
+    def build(self, feats: List[str], overwrite: bool = True):
         for f in feats:
-            self.feature_dict[f].build(self.feature_dict, postfix,
-                                       self.feature_path, overwrite)
+            self.feature_dict[f].build(self.feature_dict,
+                                       self.feature_path,
+                                       overwrite)
 
-    def build_all(self, postfix: str = '', overwrite: bool = False):
+    def build_all(self, overwrite: bool = False):
         if overwrite:
             for d in self.dvc_dirs:
                 shutil.rmtree(d)
                 os.makedirs(d)
         for v in self.feature_dict.values():
-            v.build(self.feature_dict, postfix, self.feature_path, overwrite=False)
+            v.build(self.feature_dict, self.feature_path, overwrite=False)
 
     def get_features(self, feats: List[str],
-                     postfix: str = '', update: bool = False) -> pd.DataFrame:
+                     update: bool = False) -> pd.DataFrame:
         dfs = []
         for f in feats:
-            dfs.append(self.feature_dict[f].get_features(postfix, update))
+            dfs.append(self.feature_dict[f].get_features(update))
         return pd.concat(dfs, axis=1)
 
     def update_all(self) -> pd.DataFrame:
@@ -56,6 +57,5 @@ def main_command():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("class_name", type=str)
-    parser.add_argument("--postfix", type=str, default='')
     args = parser.parse_args()
-    return f'{args.class_name}().run_and_save("{args.postfix}")'
+    return f'{args.class_name}().run_and_save()'

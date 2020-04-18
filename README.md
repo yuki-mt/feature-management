@@ -14,7 +14,7 @@ python example_main.py
 ```
 from example_feat import gs
 manager = FeatureManager(gs)
-df = manager.build_all(postfix)
+df = manager.build_all()
 ```
 
 ## when feature code changes
@@ -23,17 +23,17 @@ from example_feat import gs
 manager = FeatureManager(gs)
 names = manager.get_all_names()
 
-df = manager.get_features(names, postfix, update=True)
+df = manager.get_features(names, update=True)
 
 # or
 
 manager.update_all()
-df = manager.get_features(names, postfix)
+df = manager.get_features(names)
 ```
 
 ## when dependency changes
 ```
 from example_feat import gs
 manager = FeatureManager(gs)
-df = manager.build(['ChangedFeature'], postfix, overwrite=True)
+df = manager.build(['ChangedFeature'], overwrite=True)
 ```
