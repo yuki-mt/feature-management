@@ -8,11 +8,13 @@ import subprocess
 import re
 
 
-# run instances of this class through FeatuerManager
+"""
+run instances of this class through FeatureManager
+"""
 class Feature(metaclass=ABCMeta):
     data_dir = './feat'
-    class_dir = os.path.join(data_dir, 'py')
-    dvc_dir = os.path.join(data_dir, 'dvc')
+    class_dir = os.path.join(data_dir, '.py')
+    dvc_dir = os.path.join(data_dir, '.dvc')
 
     # Apply Singleton pattern
     def __new__(cls, *args, **kargs):
@@ -73,7 +75,6 @@ class Feature(metaclass=ABCMeta):
         dep_option = ' '.join(dep_option_list)
         py_command = f'python {filepath} {self.name}'
         command = ' '.join(['dvc run', dep_option, output_opt, dvc_output_opt, py_command])
-        print(f'run: {command}')
         subprocess.run(command, shell=True)
 
     def run_and_save(self):
@@ -82,4 +83,7 @@ class Feature(metaclass=ABCMeta):
 
     @abstractmethod
     def create_features(self):
+        """
+        assign a new feature to self.df
+        """
         raise NotImplementedError

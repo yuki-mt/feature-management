@@ -6,7 +6,8 @@ import pandas as pd
 class Base(Feature):
     def __init__(self):
         super().__init__(
-            file_dependencies=['./dataset/train.csv'])
+            file_dependencies=['./dataset/train.csv']
+        )
 
     def create_features(self):
         self.df = pd.read_csv(self.file_dependencies[0],
