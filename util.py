@@ -1,4 +1,3 @@
-from typing import List
 import inspect
 import pandas as pd
 from feature import Feature
@@ -26,15 +25,6 @@ class FeatureManager:
             os.makedirs(d, exist_ok=True)
         self.feature_path = namespace['__file__']
 
-    def get_all_names(self) -> List[str]:
-        return list(self.feature_dict.keys())
-
-    def build(self, feats: List[str], overwrite: bool = True):
-        for f in feats:
-            self.feature_dict[f].build(self.feature_dict,
-                                       self.feature_path,
-                                       overwrite)
-
     def build_all(self, overwrite: bool = False):
         if overwrite:
             for d in self.dvc_dirs:
@@ -42,13 +32,6 @@ class FeatureManager:
                 os.makedirs(d)
         for v in self.feature_dict.values():
             v.build(self.feature_dict, self.feature_path, overwrite=False)
-
-    def get_features(self, feats: List[str],
-                     update: bool = False) -> pd.DataFrame:
-        dfs = []
-        for f in feats:
-            dfs.append(self.feature_dict[f].get_features(update))
-        return pd.concat(dfs, axis=1)
 
     def update_all(self) -> pd.DataFrame:
         subprocess.run('dvc repro -P', shell=True)

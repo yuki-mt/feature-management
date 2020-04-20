@@ -1,13 +1,11 @@
-from example_feat import gs
+from example_feat import gs, Final
 from util import FeatureManager
 
 
 if __name__ == '__main__':
     manager = FeatureManager(gs)
     manager.build_all()
-    names = manager.get_all_names()
-    names.remove('Base')
-    df = manager.get_features(names)
+    df = Final().get_features()
     print(df)
     print('====================')
     """

@@ -19,21 +19,17 @@ df = manager.build_all()
 
 ## when feature code changes
 ```
-from example_feat import gs
-manager = FeatureManager(gs)
-names = manager.get_all_names()
-
-df = manager.get_features(names, update=True)
+df = YourFeature().get_features(update=True)
 
 # or
 
 manager.update_all()
-df = manager.get_features(names)
+df = YourFeature().get_features()
 ```
 
-## when dependency changes
+## reset DAG
 ```
 from example_feat import gs
 manager = FeatureManager(gs)
-df = manager.build(['ChangedFeature'], overwrite=True)
+df = manager.build_all(overwrite=True)
 ```
