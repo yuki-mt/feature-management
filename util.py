@@ -1,9 +1,9 @@
 import inspect
-import pandas as pd
 from feature import Feature
 import os
 import subprocess
 import shutil
+import fire
 
 
 class FeatureManager:
@@ -25,20 +25,24 @@ class FeatureManager:
             os.makedirs(d, exist_ok=True)
         self.feature_path = namespace['__file__']
 
-    def build_all(self, overwrite: bool = False):
+    def build(self, overwrite: bool = False):
         if overwrite:
             for d in self.dvc_dirs:
                 shutil.rmtree(d)
                 os.makedirs(d)
         for v in self.feature_dict.values():
-            v.build(self.feature_dict, self.feature_path, overwrite=False)
+            v.build(self.feature_dict, self.feature_path)
 
-    def update_all(self) -> pd.DataFrame:
-        subprocess.run('dvc repro -P', shell=True)
+    def update(self, feat: str):
+        feature = self.feature_dict[feat]
+        feature.update_source(self.feature_dict)
+        feature.update_source(self.feature_dict)
+        subprocess.run(f'dvc repro {feature.dvc_path}', shell=True)
 
-def main_command():
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("class_name", type=str)
-    args = parser.parse_args()
-    return f'{args.class_name}().run_and_save()'
+    def run(self, feat: str):
+        feature = self.feature_dict[feat]
+        feature.run_and_save()
+
+
+def main_command(namespace: dict):
+    fire.Fire(FeatureManager(namespace))

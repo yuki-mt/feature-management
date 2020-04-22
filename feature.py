@@ -49,20 +49,25 @@ class Feature(metaclass=ABCMeta):
             with open(path, 'rb') as f:
                 self.df = pickle.load(f)
 
-    def get_features(self, update: bool = False) -> pd.DataFrame:
-        if update:
-            source = getsource(self.__class__)
-            self.__save_source(source)
-            command = f'dvc repro {self.dvc_path}'
-            subprocess.run(command, shell=True)
+    def update_source(self, all_feats: Dict[str, "Feature"]) -> None:
+        """
+        supposed to run this through FeatureManager
+        """
+        source = getsource(self.__class__)
+        self.__save_source(source)
+        dependencies = self.__get_dependency(source)
+        for d in dependencies:
+            all_feats[d].update_source(all_feats)
+
+    def get_features(self) -> pd.DataFrame:
         self.__load()
         return deepcopy(self.df)
 
-    def build(self, all_feats: Dict[str, "Feature"], filepath: str, overwrite: bool = False):
+    def build(self, all_feats: Dict[str, "Feature"], filepath: str):
         """
-        run this method through FeatureManager
+        supposed to run this through FeatureManager
         """
-        if not overwrite and os.path.exists(self.dvc_path):
+        if os.path.exists(self.dvc_path):
             return
         output_opt = '-o ' + self.output_path()
         dvc_output_opt = '-f ' + self.dvc_path
@@ -74,14 +79,11 @@ class Feature(metaclass=ABCMeta):
             all_feats[d].build(all_feats, filepath)
             dep_option_list.append('-d ' + self.output_path(d))
         dep_option = ' '.join(dep_option_list)
-        py_command = f'python {filepath} {self.name}'
+        py_command = f'python {filepath} run {self.name}'
         command = ' '.join(['dvc run', dep_option, output_opt, dvc_output_opt, py_command])
         subprocess.run(command, shell=True)
 
     def run_and_save(self):
-        """
-        run this method through "dvc run"
-        """
         self.create_features()
         self.__save()
 

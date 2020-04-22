@@ -2,3 +2,4 @@ pandas
 dill
 dvc
 pydotplus
+fire

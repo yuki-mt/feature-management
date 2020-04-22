@@ -7,31 +7,23 @@ apply DVC
 ```
 pip install -r requirements.txt
 dvc init
+python example_feat.py build
 python example_main.py
 ```
 
 ## intially build DVC DAG
 ```
-from example_feat import gs
-manager = FeatureManager(gs)
-df = manager.build_all()
+python example_feat.py build
 ```
 
 ## when feature code changes
 ```
-df = YourFeature().get_features(update=True)
-
-# or
-
-manager.update_all()
-df = YourFeature().get_features()
+python example_feat.py update <feature_class_name>
 ```
 
 ## reset DAG
 ```
-from example_feat import gs
-manager = FeatureManager(gs)
-df = manager.build_all(overwrite=True)
+python example_feat.py build --overwrite=True
 ```
 
 ## Display DAG in Jupyter notebook

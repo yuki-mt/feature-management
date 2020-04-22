@@ -33,8 +33,5 @@ class Final(Feature):
         self.df = pd.concat(dfs, axis=1)
 
 
-gs = globals()
-
-
 if __name__ == '__main__':
-    exec(main_command())
+    main_command(globals())
